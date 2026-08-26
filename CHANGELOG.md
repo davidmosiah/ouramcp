@@ -1,3 +1,9 @@
+## 0.7.1 - 2026-08-26
+
+### Security
+
+- OAuth authorization now uses PKCE S256 and 128-bit state.
+
 ## 0.7.0 - 2026-08-13
 
 ### Fixed
