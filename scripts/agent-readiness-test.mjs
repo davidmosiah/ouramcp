@@ -120,7 +120,54 @@ try {
   assert.equal(legacy.oauth.scope_status, 'ok');
   assert.deepEqual(legacy.oauth.missing_recommended_scopes, []);
 
-  console.log(JSON.stringify({ ok: true, markdown: true, scope_diagnostics: true, spo2_alias: true }, null, 2));
+  // Oura now returns scopes with an `extapi:` prefix (#11). Doctor must treat
+  // those as the unprefixed recommended names without editing tokens.json.
+  writeFileSync(tokenPath, JSON.stringify({
+    access_token: 'access',
+    refresh_token: 'refresh',
+    expires_at: 2_000_000,
+    scope: 'extapi:daily extapi:heartrate extapi:personal extapi:workout extapi:spo2'
+  }), { mode: 0o600 });
+
+  const prefixed = await buildConnectionStatus({
+    env: {
+      OURA_CLIENT_ID: 'client-id',
+      OURA_CLIENT_SECRET: 'client-secret',
+      OURA_REDIRECT_URI: 'http://127.0.0.1:4567/callback',
+      OURA_TOKEN_PATH: tokenPath
+    },
+    homeDir: dir,
+    nowMs: 1_000_000
+  });
+  assert.equal(prefixed.oauth.scope_status, 'ok');
+  assert.deepEqual(prefixed.oauth.missing_recommended_scopes, []);
+  assert.equal(prefixed.ok, true);
+  assert.equal(prefixed.oauth.activity_tools_ready, true);
+  assert.equal(prefixed.oauth.profile_tools_ready, true);
+
+  // Prefix + existing alias: extapi:spo2Daily must still satisfy spo2.
+  writeFileSync(tokenPath, JSON.stringify({
+    access_token: 'access',
+    refresh_token: 'refresh',
+    expires_at: 2_000_000,
+    scope: 'extapi:daily extapi:heartrate extapi:personal extapi:workout extapi:spo2Daily'
+  }), { mode: 0o600 });
+
+  const prefixedAlias = await buildConnectionStatus({
+    env: {
+      OURA_CLIENT_ID: 'client-id',
+      OURA_CLIENT_SECRET: 'client-secret',
+      OURA_REDIRECT_URI: 'http://127.0.0.1:4567/callback',
+      OURA_TOKEN_PATH: tokenPath
+    },
+    homeDir: dir,
+    nowMs: 1_000_000
+  });
+  assert.equal(prefixedAlias.oauth.scope_status, 'ok');
+  assert.deepEqual(prefixedAlias.oauth.missing_recommended_scopes, []);
+  assert.equal(prefixedAlias.ok, true);
+
+  console.log(JSON.stringify({ ok: true, markdown: true, scope_diagnostics: true, spo2_alias: true, extapi_prefix: true }, null, 2));
 } finally {
   rmSync(dir, { recursive: true, force: true });
 }

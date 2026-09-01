@@ -1,3 +1,9 @@
+## 0.7.3 - 2026-09-01
+
+### Fixed
+
+- **Doctor no longer fails after a full Oura consent** (#11). Oura now returns granted scopes with an `extapi:` prefix (`extapi:daily`, `extapi:heartrate`, …). Scope canonicalization strips that wire prefix so recommended scopes still match, including aliases such as `extapi:spo2Daily` → `spo2`. Unprefixed grants remain valid.
+
 ## 0.7.2 - 2026-08-29
 
 Skill layer ships in-package (`skill/SKILL.md`). Agents can use MCP tools **or** `call <tool> --json` on the same binary; mutation gates stay identical.
