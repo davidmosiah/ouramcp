@@ -291,7 +291,9 @@ function parseScopes(scope: string | undefined): string[] {
 }
 
 function canonicalizeScope(scope: string): string {
-  const key = scope.trim().toLowerCase();
+  // Oura token responses now prefix scopes with `extapi:` (#11). Strip that
+  // wire prefix after lowercasing so aliases such as spo2Daily still resolve.
+  const key = scope.trim().toLowerCase().replace(/^extapi:/, "");
   return SCOPE_ALIASES[key] ?? key;
 }
 

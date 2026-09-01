@@ -1,6 +1,6 @@
 {
   "name": "oura-mcp-unofficial",
-  "version": "0.7.2",
+  "version": "0.7.3",
   "description": "Unofficial local-first Oura MCP server for AI health, sleep and activity agents.",
   "type": "module",
   "bin": {
