@@ -38,15 +38,15 @@ export function formatCollection(title: string, records: unknown[], meta: Record
     if (record && typeof record === "object") {
       const object = record as Record<string, unknown>;
       const id = object.id ?? object.id_str ?? `item-${index + 1}`;
-      const start = object.start_date ?? object.start_date_local ?? object.created_at ?? object.updated_at ?? "n/a";
-      const sport = object.sport_type ?? object.type ?? "n/a";
       lines.push(`## ${String(id)}`);
-      if (object.name) lines.push(`- **name**: ${String(object.name)}`);
-      lines.push(`- **start/created**: ${String(start)}`);
-      lines.push(`- **sport/type**: ${String(sport)}`);
-      if (object.distance !== undefined) lines.push(`- **distance_m**: ${String(object.distance)}`);
-      if (object.moving_time !== undefined) lines.push(`- **moving_time_s**: ${String(object.moving_time)}`);
-      if (object.total_elevation_gain !== undefined) lines.push(`- **elevation_m**: ${String(object.total_elevation_gain)}`);
+      // Endpoints (activity, sleep, readiness, workout, heartrate, spo2, session, tag) have
+      // materially different shapes; render whatever fields are actually present instead of
+      // guessing at workout-specific field names that don't exist on the other record types.
+      for (const [key, value] of Object.entries(object)) {
+        if (key === "id" || key === "id_str") continue;
+        if (value === undefined || value === null) continue;
+        lines.push(`- **${key}**: ${formatMarkdownValue(value)}`);
+      }
       lines.push("");
     } else {
       lines.push(`- ${JSON.stringify(record)}`);
