@@ -1,5 +1,5 @@
 import { URL, URLSearchParams } from "node:url";
-import { DEFAULT_LIMIT, LATEST_SCAN_MAX_PAGES, OURA_API_BASE_URL, OURA_AUTH_URL, OURA_REVOKE_URL, OURA_TOKEN_URL, MAX_OURA_LIMIT } from "../constants.js";
+import { DEFAULT_LIMIT, DEFAULT_LIST_LOOKBACK_DAYS, LATEST_SCAN_MAX_PAGES, OURA_API_BASE_URL, OURA_AUTH_URL, OURA_REVOKE_URL, OURA_TOKEN_URL, MAX_OURA_LIMIT } from "../constants.js";
 import type { OuraConfig, OuraTokenSet } from "../types.js";
 import { disabledCacheStatus, OuraCache, type CacheStatus } from "./cache.js";
 import { fetchWithCache, getCacheStats } from "./http-cache.js";
@@ -370,6 +370,14 @@ export class OuraClient {
 }
 
 function ouraDateRange(params: { after?: string; before?: string }): Record<string, string> {
+  if (!params.after && !params.before) {
+    // Oura returns zero records when start_date/end_date are omitted rather than applying
+    // its own default, so a bare call needs an explicit window to return anything at all.
+    const end = new Date();
+    const start = new Date(end);
+    start.setUTCDate(start.getUTCDate() - DEFAULT_LIST_LOOKBACK_DAYS);
+    return { start_date: start.toISOString().slice(0, 10), end_date: end.toISOString().slice(0, 10) };
+  }
   const range: Record<string, string> = {};
   if (params.after) range.start_date = toDate(params.after);
   if (params.before) range.end_date = toDate(params.before);

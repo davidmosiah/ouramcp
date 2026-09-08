@@ -49,3 +49,12 @@ export const LATEST_SCAN_MAX_PAGES = 20;
  * window came back empty, so a ring that has not synced in weeks still answers.
  */
 export const LATEST_LOOKBACK_DAYS = [14, 90, 400];
+
+/**
+ * Default window for `list()` calls that pass neither `after` nor `before`.
+ *
+ * Oura's collection endpoints do not apply a server-side default when start_date/end_date
+ * are omitted; they return zero records. Without this, a bare `oura_list_*` call silently
+ * looks like "no data" instead of "no date range was requested."
+ */
+export const DEFAULT_LIST_LOOKBACK_DAYS = 30;
